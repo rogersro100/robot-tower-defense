@@ -184,10 +184,11 @@ function show_infobox() {
     <title>web_build</title>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="viewport" content="height=device-height, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 
 
     <link rel="icon" type="image/png" href="favicon.png" sizes="16x16">
@@ -237,6 +238,12 @@ function show_infobox() {
             bottom: 0;
             left: 0;
             right: 0;
+
+            /* PATCHED: touch goes to the game, not the browser - no
+               scroll/zoom/drag interception on mobile */
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         body {
@@ -244,6 +251,17 @@ function show_infobox() {
             margin: 0;
             padding: none;
             background-color:powderblue;
+
+            /* PATCHED: no pull-to-refresh, page scroll, or text
+               selection while playing */
+            overscroll-behavior: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
 
         .topright{
@@ -434,6 +452,23 @@ frameborder="1"
     function frame_online(url) {
         window.frames["iframe"].location = url;
     }
+
+    // PATCHED: landscape hint for portrait phones - the game board is
+    // 1800x950 landscape, so portrait viewing is cramped.
+    window.addEventListener('load', function() {
+      var el = document.createElement('div');
+      el.id = 'rotate-hint';
+      el.textContent = 'ROTATE DEVICE FOR BEST VIEW';
+      el.style.cssText = 'position:fixed;bottom:8px;left:50%;transform:translateX(-50%);z-index:999999;color:#0ff;background:rgba(0,0,10,.75);padding:6px 14px;font:bold 13px monospace;border:1px solid #0ff;display:none;pointer-events:none;';
+      document.body.appendChild(el);
+      var check = function() {
+        var portrait = window.innerHeight > window.innerWidth && window.innerWidth < 700;
+        el.style.display = portrait ? 'block' : 'none';
+      };
+      check();
+      window.addEventListener('resize', check);
+      window.addEventListener('orientationchange', check);
+    });
 
     </script>
 
